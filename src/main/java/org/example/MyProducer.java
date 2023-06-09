@@ -35,12 +35,12 @@ public class MyProducer {
         return producer;
     }
 
-    private static void deleteTopics() {
+    public static void deleteTopics() {
         Properties props = new Properties();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, server);
 
         try (AdminClient adminClient = AdminClient.create(props)) {
-            List<String> topics = Arrays.asList("raw_data", "valid_data");
+            List<String> topics = Arrays.asList("raw_data", "valid_data", "monitoring");
 
             DeleteTopicsResult deleteTopicsResult = adminClient.deleteTopics(topics);
 
@@ -60,8 +60,14 @@ public class MyProducer {
                 String line;
                 int breakPoint = 0;
                 while ((line = br.readLine()) != null && breakPoint <= 10) {
+                    if (breakPoint == 0) {
+                        breakPoint++;
+
+                        continue;
+                    }
                     producer.send(new ProducerRecord<>("raw_data", line));
-                    breakPoint++;
+
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
