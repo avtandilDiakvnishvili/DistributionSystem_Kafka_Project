@@ -18,9 +18,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
-import static org.example.SparkKafka.server;
 
 public class MyProducer {
+
+
     public static void main(String[] args) {
         uploadTestData();
     }
@@ -37,7 +38,7 @@ public class MyProducer {
 
     public static void deleteTopics() {
         Properties props = new Properties();
-        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, server);
+        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 
         try (AdminClient adminClient = AdminClient.create(props)) {
             List<String> topics = Arrays.asList("raw_data", "valid_data", "monitoring");
