@@ -3,15 +3,13 @@ package org.example;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.when;
 
 public class Main {
-    public static void main(String[] args) throws AnalysisException, InterruptedException, TimeoutException, StreamingQueryException {
+    public static void main(String[] args) {
 
         MyProducer.deleteTopics();
         MyProducer.uploadTestData();
@@ -36,7 +34,6 @@ public class Main {
 
         parsedData.cache();
 
-        Dataset<Row> forMonitoringData;
         Dataset<Row> filteredParseData = null;
         String[] sensorColumns = {"sensor0", "sensor1", "sensor2", "sensor3"};
         for (String sensorColumn : sensorColumns) {
@@ -60,13 +57,14 @@ public class Main {
 
 
         //monitoring data
-        forMonitoringData = parsedData.filter(col("ts").equalTo("1970-01-01 00:00:00")
-                .or(col("sensor0").isNull()
-                        .and(col("sensor1").isNull())
-                        .and(col("sensor2").isNull())
-                        .and(col("sensor3").isNull())));
-        // forMonitoringData.show();
-        Dataset<String> invalidDataMessages = parsedData.flatMap(new InvalidDataChecker(), Encoders.STRING());
+
+
+        Dataset<String> invalidDataMessages = parsedData.filter(col("ts").equalTo("1970-01-01 00:00:00")
+                        .or(col("sensor0").isNull()
+                                .and(col("sensor1").isNull())
+                                .and(col("sensor2").isNull())
+                                .and(col("sensor3").isNull())))
+                .flatMap(new InvalidDataChecker(), Encoders.STRING());
         invalidDataMessages.show();
         invalidDataMessages
                 .selectExpr("CAST(value AS STRING) as value")
