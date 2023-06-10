@@ -7,8 +7,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -31,9 +29,8 @@ public class MyProducer {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
-        return producer;
+        return new KafkaProducer<>(props);
     }
 
     public static void deleteTopics() {
@@ -54,8 +51,7 @@ public class MyProducer {
     }
 
     public static void uploadTestData() {
-        KafkaProducer<String, String> producer = createKafkaProducer();
-        try {
+        try (KafkaProducer<String, String> producer = createKafkaProducer()) {
             String filePath = "/home/avtandil/IdeaProjects/FinalProjects/raw_data.csv";
             try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
                 String line;
@@ -79,8 +75,6 @@ public class MyProducer {
         } catch (Exception e) {
             e.printStackTrace();
 
-        } finally {
-            producer.close();
         }
 
 

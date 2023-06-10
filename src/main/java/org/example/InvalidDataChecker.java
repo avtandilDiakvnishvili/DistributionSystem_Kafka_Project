@@ -9,7 +9,7 @@ import java.util.List;
 
 public class InvalidDataChecker implements FlatMapFunction<Row, String> {
     @Override
-    public Iterator<String> call(Row row) throws Exception {
+    public Iterator<String> call(Row row) {
         List<String> invalidDataMessages = new ArrayList<>();
 
         String ts = row.getString(row.fieldIndex("ts"));

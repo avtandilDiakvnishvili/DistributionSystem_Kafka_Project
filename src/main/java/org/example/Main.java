@@ -1,12 +1,10 @@
 package org.example;
 
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.streaming.StreamingQueryException;
-
-import java.util.concurrent.TimeoutException;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.when;
+
 
 public class Main {
     public static void main(String[] args) {
