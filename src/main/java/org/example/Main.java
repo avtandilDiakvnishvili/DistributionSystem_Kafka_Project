@@ -3,6 +3,8 @@ package org.example;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import static org.apache.spark.sql.functions.col;
@@ -18,7 +20,7 @@ public class Main {
         SparkSession spark = SparkSession.builder().appName("Streaming Example").master("local[*]").getOrCreate();
 
         // Read data from a streaming source
-        Dataset<Row> data = spark.read().format("kafka").option("kafka.bootstrap.servers", "localhost:9092").option("subscribe", "raw_data").option("group.id","test")
+        Dataset<Row> data = spark.read().format("kafka").option("kafka.bootstrap.servers", "localhost:9092").option("subscribe", "raw_data").option("group.id", "test")
                 .load();
 
         Dataset<Row> parsedData = data
@@ -59,11 +61,19 @@ public class Main {
 
         //monitoring data
         forMonitoringData = parsedData.filter(col("ts").equalTo("1970-01-01 00:00:00")
-                .or(col("sensor0").isNull().and(col("sensor1").isNull()).and(col("sensor2").isNull())
+                .or(col("sensor0").isNull()
+                        .and(col("sensor1").isNull())
+                        .and(col("sensor2").isNull())
                         .and(col("sensor3").isNull())));
-        forMonitoringData.show();
-        forMonitoringData.selectExpr("CAST(ts AS STRING) as key", "CONCAT_WS(';', ts, station_id, sensor0,sensor1,sensor2,sensor3) AS value")
-                .write().format("kafka").option("kafka.bootstrap.servers", "localhost:9092").option("topic", "monitoring").save();
+        // forMonitoringData.show();
+        Dataset<String> invalidDataMessages = parsedData.flatMap(new InvalidDataChecker(), Encoders.STRING());
+        invalidDataMessages.show();
+        invalidDataMessages
+                .selectExpr("CAST(value AS STRING) as value")
+                .write()
+                .format("kafka")
+                .option("kafka.bootstrap.servers", "localhost:9092")
+                .option("topic", "monitoring").save();
 
 
     }
